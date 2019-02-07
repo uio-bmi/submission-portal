@@ -9,9 +9,9 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @AllArgsConstructor
 @Data
-public class InboxFile implements Serializable {
+public class ErrorFile implements Serializable {
 
-    private String path;
-    private Long size;
+    private String file;
+    private String reason;
 
 }
