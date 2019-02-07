@@ -1,10 +1,15 @@
 package no.uio.ifi.spring.view;
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.AppLayoutMenu;
 import com.vaadin.flow.component.applayout.AppLayoutMenuItem;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
@@ -13,24 +18,29 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinSession;
+import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.spring.pojo.InboxFile;
 import no.uio.ifi.spring.service.FilesService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+@Slf4j
 @Push
 @Route
 @PWA(name = "EGA Submission Portal", shortName = "Portal")
 public class SubmissionView extends AppLayout {
 
     private FilesService filesService;
+    private Channel channel;
     private String username;
     private Grid<InboxFile> grid = new Grid<>();
 
-    public SubmissionView(@Autowired FilesService filesService) {
+    public SubmissionView(@Autowired FilesService filesService, @Autowired Channel channel) {
         this.filesService = filesService;
+        this.channel = channel;
 
         VaadinSession session = VaadinSession.getCurrent();
         if (session.getAttribute("username") == null) {
@@ -46,7 +56,24 @@ public class SubmissionView extends AppLayout {
 
         grid.setItems(filesService.getFiles(username));
 
-        Component content = new Span(new H3("Inbox content for " + username), grid);
+        Button button = new Button("Submit");
+        button.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> {
+            for (InboxFile file : filesService.getFiles(username)) {
+                try {
+                    String message = String.format("{ \"user\": \"%s\", \"filepath\": \"%s\"}", username, file.getPath());
+                    log.info("Publishing message {}", message);
+                    channel.basicPublish("localega.v1",
+                            "files",
+                            new AMQP.BasicProperties(),
+                            message.getBytes()
+                    );
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        });
+
+        Component content = new Span(new H3("Inbox content for " + username), grid, button);
 
         setContent(content);
     }
