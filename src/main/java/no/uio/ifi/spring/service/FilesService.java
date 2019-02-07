@@ -46,4 +46,10 @@ public class FilesService {
         }
     }
 
+    public void clear(String username) {
+        synchronized (files) {
+            files.removeAll(username);
+        }
+    }
+
 }

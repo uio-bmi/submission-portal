@@ -14,6 +14,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
@@ -67,8 +68,10 @@ public class SubmissionView extends AppLayout {
                             new AMQP.BasicProperties(),
                             message.getBytes()
                     );
+                    filesService.clear(username);
+                    Notification.show("Success!");
                 } catch (IOException e) {
-                    log.error(e.getMessage(), e);
+                    Notification.show(e.getMessage());
                 }
             }
         });
