@@ -93,7 +93,7 @@ public class SubmissionView extends AppLayout {
         archiveLayout.setSizeFull();
         archiveLayout.add(new H3("Archive files"), archiveFileGrid);
 
-        Button clearButton = new Button("Submit");
+        Button clearButton = new Button("Clear all");
         clearButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> filesService.clearAll(username));
 
         VerticalLayout errorLayout = new VerticalLayout();
