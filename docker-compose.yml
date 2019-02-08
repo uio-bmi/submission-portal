@@ -1,0 +1,10 @@
+version: "2"
+
+services:
+
+  portal:
+    image: uiobmi/ega-submission-portal:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - MQ_PASSWORD=

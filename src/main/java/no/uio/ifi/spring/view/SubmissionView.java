@@ -32,7 +32,7 @@ import java.util.TimerTask;
 
 @Slf4j
 @Push
-@Route
+@Route("")
 @PWA(name = "EGA Submission Portal", shortName = "Portal")
 public class SubmissionView extends AppLayout {
 
@@ -66,8 +66,8 @@ public class SubmissionView extends AppLayout {
         errorFileGrid.addColumn(ErrorFile::getReason).setHeader("Reason");
         errorFileGrid.setItems(filesService.getErrorFiles(username));
 
-        Button button = new Button("Submit");
-        button.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> {
+        Button submitButton = new Button("Submit");
+        submitButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> {
             for (InboxFile file : filesService.getInboxFiles(username)) {
                 try {
                     String message = String.format("{ \"user\": \"%s\", \"filepath\": \"%s\"}", username, file.getPath());
@@ -77,7 +77,7 @@ public class SubmissionView extends AppLayout {
                             new AMQP.BasicProperties(),
                             message.getBytes()
                     );
-                    filesService.clear(username);
+                    filesService.clearInboxList(username);
                     Notification.show("Success!");
                 } catch (IOException e) {
                     Notification.show(e.getMessage());
@@ -87,15 +87,18 @@ public class SubmissionView extends AppLayout {
 
         VerticalLayout inboxLayout = new VerticalLayout();
         inboxLayout.setSizeFull();
-        inboxLayout.add(new H3("Inbox content for user: " + username), inboxFileGrid, button);
+        inboxLayout.add(new H3("Inbox content for user: " + username), inboxFileGrid, submitButton);
 
         VerticalLayout archiveLayout = new VerticalLayout();
         archiveLayout.setSizeFull();
         archiveLayout.add(new H3("Archive files"), archiveFileGrid);
 
+        Button clearButton = new Button("Submit");
+        clearButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> filesService.clearAll(username));
+
         VerticalLayout errorLayout = new VerticalLayout();
         errorLayout.setSizeFull();
-        errorLayout.add(new H3("Error files"), errorFileGrid);
+        errorLayout.add(new H3("Error files"), errorFileGrid, clearButton);
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         horizontalLayout.add(inboxLayout, archiveLayout, errorLayout);

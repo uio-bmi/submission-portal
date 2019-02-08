@@ -94,8 +94,14 @@ public class FilesService {
         return (Collection<ErrorFile>) errorFiles.computeIfAbsent(username, k -> new HashSet<>());
     }
 
-    public void clear(String username) {
+    public void clearInboxList(String username) {
         inboxFiles.remove(username);
+    }
+
+    public void clearAll(String username) {
+        inboxFiles.remove(username);
+        archiveFiles.remove(username);
+        errorFiles.remove(username);
     }
 
 }
