@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 @Slf4j
 @Push
@@ -70,7 +71,8 @@ public class SubmissionView extends AppLayout {
         submitButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> {
             for (InboxFile file : filesService.getInboxFiles(username)) {
                 try {
-                    String message = String.format("{ \"user\": \"%s\", \"filepath\": \"%s\"}", username, file.getPath());
+                    String stableId = "EGAF" + UUID.randomUUID().toString().replace("-", "");
+                    String message = String.format("{ \"user\": \"%s\", \"filepath\": \"%s\", \"stable_id\":\"%s\"}", username, file.getPath(), stableId);
                     log.info("Publishing message {}", message);
                     channel.basicPublish("localega.v1",
                             "files",
